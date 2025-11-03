@@ -152,16 +152,45 @@ export function Header({ className }: HeaderProps) {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t border-gray-800">
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/contact" onClick={() => setIsMenuOpen(false)}>
-                    Get Quote
-                  </Link>
-                </Button>
-                <Button size="sm" asChild>
-                  <Link href="/contact" onClick={() => setIsMenuOpen(false)}>
-                    Book Call
-                  </Link>
-                </Button>
+                {session ? (
+                  <>
+                    <div className="px-3 py-2">
+                      <p className="text-sm font-medium text-white">{session.user?.name}</p>
+                      <p className="text-xs text-gray-400">{session.user?.email}</p>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                        <User className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-500/20 text-red-400 hover:bg-red-500/10"
+                      onClick={() => {
+                        signOut()
+                        setIsMenuOpen(false)
+                      }}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}>
+                        Sign In
+                      </Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <Link href="/contact" onClick={() => setIsMenuOpen(false)}>
+                        Book Call
+                      </Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
