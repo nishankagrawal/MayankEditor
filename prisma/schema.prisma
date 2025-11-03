@@ -1,0 +1,593 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(USER)
+  bio           String?
+  avatar        String?
+  website       String?
+  location      String?
+  socialLinks   Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  projects      Project[]
+  blogPosts     BlogPost[]
+  orders        Order[]
+  bookings      Booking[]
+  testimonials  Testimonial[]
+  courseProgress CourseProgress[]
+  reviews       Review[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Category {
+  id          String @id @default(cuid())
+  name        String @unique
+  slug        String @unique
+  description String?
+  color       String?
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  projects    Project[]
+  blogPosts   BlogPost[]
+  courses     Course[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id        String @id @default(cuid())
+  name      String @unique
+  slug      String @unique
+  color     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projects  ProjectTag[]
+  blogPosts BlogPostTag[]
+  courses   CourseTag[]
+
+  @@map("tags")
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  description   String
+  content       String?  @db.Text
+  excerpt       String?
+  clientName    String?
+  clientUrl     String?
+  projectDate   DateTime?
+  featured      Boolean  @default(false)
+  published     Boolean  @default(false)
+  videoUrl      String?
+  videoThumbnail String?
+  heroImage     String?
+  images        Json?
+  tools         String[]
+  deliverables  String?
+  caseStudyUrl  String?
+  metaTitle     String?
+  metaDescription String?
+  metaKeywords  String?
+  ogImage       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  authorId      String
+  author        User     @relation(fields: [authorId], references: [id])
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  tags          ProjectTag[]
+  testimonials  Testimonial[]
+  reviews       Review[]
+
+  @@map("projects")
+}
+
+model ProjectTag {
+  projectId String
+  tagId     String
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+  @@map("project_tags")
+}
+
+model BlogPost {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  content       String    @db.Text
+  excerpt       String?
+  featuredImage String?
+  readingTime   Int?
+  status        PostStatus @default(DRAFT)
+  publishedAt   DateTime?
+  metaTitle     String?
+  metaDescription String?
+  metaKeywords  String?
+  ogImage       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  authorId      String
+  author        User      @relation(fields: [authorId], references: [id])
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  tags          BlogPostTag[]
+  comments      Comment[]
+
+  @@map("blog_posts")
+}
+
+model BlogPostTag {
+  blogPostId String
+  tagId      String
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([blogPostId, tagId])
+  @@map("blog_post_tags")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  author    String?
+  email     String?
+  website   String?
+  ip        String?
+  userAgent String?
+  status    CommentStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  blogPostId String
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  parentId   String?
+  parent     Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies    Comment[] @relation("CommentReplies")
+
+  @@map("comments")
+}
+
+model Course {
+  id            String       @id @default(cuid())
+  title         String
+  slug          String       @unique
+  description   String       @db.Text
+  excerpt       String?
+  thumbnail     String?
+  price         Float
+  comparePrice  Float?
+  currency      String       @default("USD")
+  status        CourseStatus @default(DRAFT)
+  featured      Boolean      @default(false)
+  publishedAt   DateTime?
+  difficulty    Difficulty   @default(BEGINNER)
+  duration      Int?         // in minutes
+  language      String       @default("en")
+  requirements  String[]
+  objectives    String[]
+  metaTitle     String?
+  metaDescription String?
+  metaKeywords  String?
+  ogImage       String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relations
+  instructorId  String
+  instructor    User         @relation(fields: [instructorId], references: [id])
+  categoryId    String?
+  category      Category?    @relation(fields: [categoryId], references: [id])
+  tags          CourseTag[]
+  lessons       Lesson[]
+  orders        OrderItem[]
+  progress      CourseProgress[]
+  reviews       Review[]
+
+  @@map("courses")
+}
+
+model CourseTag {
+  courseId String
+  tagId    String
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, tagId])
+  @@map("course_tags")
+}
+
+model Lesson {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  videoUrl    String?
+  duration    Int?        // in seconds
+  order       Int
+  isPreview   Boolean     @default(false)
+  content     String?     @db.Text
+  resources   Json?       // downloadable files, links, etc.
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  courseId    String
+  course      Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress    LessonProgress[]
+
+  @@map("lessons")
+}
+
+model CourseProgress {
+  id         String   @id @default(cuid())
+  completed  Boolean  @default(false)
+  progress   Float    @default(0) // percentage 0-100
+  lastAccess DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("course_progress")
+}
+
+model LessonProgress {
+  id        String   @id @default(cuid())
+  completed Boolean  @default(false)
+  watchTime Int?     // seconds watched
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId    String
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  status        OrderStatus @default(PENDING)
+  total         Float
+  subtotal      Float
+  tax           Float       @default(0)
+  discount      Float       @default(0)
+  currency      String      @default("USD")
+  paymentMethod String?
+  paymentId     String?
+  notes         String?     @db.Text
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  customerId    String
+  customer      User        @relation(fields: [customerId], references: [id])
+  items         OrderItem[]
+  coupon        Coupon?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  price       Float
+  quantity    Int      @default(1)
+  total       Float
+  createdAt   DateTime @default(now())
+
+  // Relations
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  courseId    String?
+  course      Course?  @relation(fields: [courseId], references: [id])
+
+  @@map("order_items")
+}
+
+model Coupon {
+  id          String      @id @default(cuid())
+  code        String      @unique
+  type        CouponType
+  value       Float
+  minimum     Float?
+  usageLimit  Int?
+  usedCount   Int         @default(0)
+  expiresAt   DateTime?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  orders      Order[]
+
+  @@map("coupons")
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String?
+  company   String?
+  content   String   @db.Text
+  rating    Int?     // 1-5
+  avatar    String?
+  videoUrl  String?
+  featured  Boolean  @default(false)
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+
+  @@map("testimonials")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      // 1-5
+  title     String?
+  content   String   @db.Text
+  verified  Boolean  @default(false)
+  helpful   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id])
+  courseId   String?
+  course     Course?  @relation(fields: [courseId], references: [id])
+
+  @@map("reviews")
+}
+
+model Booking {
+  id          String      @id @default(cuid())
+  eventName   String
+  startTime   DateTime
+  endTime     DateTime
+  timezone    String
+  status      BookingStatus @default(SCHEDULED)
+  notes       String?     @db.Text
+  cancelUrl   String?
+  rescheduleUrl String?
+  calendlyId  String?     @unique
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  clientId    String
+  client      User        @relation(fields: [clientId], references: [id])
+
+  @@map("bookings")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  price       Float
+  duration    String?  // e.g., "3-5 days"
+  features    String[]
+  popular     Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("services")
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String   @db.Text
+  phone     String?
+  company   String?
+  status    MessageStatus @default(UNREAD)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_messages")
+}
+
+model SiteSettings {
+  id          String   @id @default(cuid())
+  siteName    String   @default("Mayank Editor")
+  siteUrl     String
+  logo        String?
+  favicon     String?
+  primaryColor String  @default("#ff6b4a")
+  darkMode    Boolean  @default(true)
+  heroVideo   String?
+  heroTitle   String?
+  heroSubtitle String?
+  heroCta     String?
+  heroCtaUrl  String?
+  contactEmail String?
+  socialLinks Json?
+  analytics   Json?
+  seoSettings Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+
+  @@map("newsletters")
+}
+
+model Analytics {
+  id            String   @id @default(cuid())
+  date          DateTime @default(now())
+  pageViews     Int      @default(0)
+  uniqueVisitors Int     @default(0)
+  sessions      Int      @default(0)
+  bounceRate    Float    @default(0)
+  avgSessionDuration Float @default(0)
+  topPages      Json?
+  referrers     Json?
+  devices       Json?
+  browsers      Json?
+
+  @@unique([date])
+  @@map("analytics")
+}
+
+// Enums
+enum Role {
+  USER
+  EDITOR
+  ADMIN
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum BookingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
+  REPLIED
+  ARCHIVED
+}
