@@ -22,6 +22,7 @@ interface HeaderProps {
 }
 
 export function Header({ className }: HeaderProps) {
+  const { data: session } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
