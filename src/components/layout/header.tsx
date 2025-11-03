@@ -2,8 +2,18 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Menu, X, Play, Calendar } from 'lucide-react'
+import { useSession, signOut } from 'next-auth/react'
+import { Menu, X, Play, Calendar, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { mainNav } from '@/config/site'
 
