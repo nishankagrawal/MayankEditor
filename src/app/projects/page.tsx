@@ -1,3 +1,5 @@
+'use client'
+
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
@@ -5,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Play, Filter, Calendar, Eye, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
 
 export default function ProjectsPage() {
   const projects = [
