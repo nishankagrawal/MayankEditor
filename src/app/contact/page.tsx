@@ -331,19 +331,28 @@ export default function ContactPage() {
                   <CardHeader>
                     <CardTitle className="text-white">Book a Call</CardTitle>
                     <CardDescription className="text-gray-400">
-                      Schedule a free 30-minute consultation to discuss your project.
+                      Schedule a free 30-minute consultation to discuss your project directly in my calendar.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
+                    <div className="mb-4">
+                      <iframe
+                        src="https://calendly.com/mayank-editor/30min"
+                        width="100%"
+                        height="320"
+                        frameBorder="none"
+                        className="rounded-lg"
+                      />
+                    </div>
                     <Button size="lg" className="w-full" asChild>
-                      <Link href="#" className="flex items-center space-x-2">
+                      <Link href="https://calendly.com/mayank-editor/30min" target="_blank" className="flex items-center space-x-2">
                         <Calendar className="h-5 w-5" />
                         <span>Schedule Meeting</span>
                       </Link>
                     </Button>
                     <p className="text-gray-400 text-sm mt-3 text-center">
                       <Clock className="h-4 w-4 inline mr-1" />
-                      Usually available within 24 hours
+                      Available: Mon-Fri, 9AM-6PM IST
                     </p>
                   </CardContent>
                 </Card>
