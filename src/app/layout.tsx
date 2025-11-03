@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { cn } from '@/lib/utils'
 import { Providers } from '@/components/providers'
+import { SessionProviders } from '@/components/session-provider'
 import { siteConfig } from '@/config/site'
 
 const inter = Inter({ subsets: ['latin'] })
