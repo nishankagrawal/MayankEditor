@@ -76,7 +76,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
           inter.className
         )}
       >
-        <Providers>{children}</Providers>
+        <SessionProviders>
+          <Providers>{children}</Providers>
+        </SessionProviders>
         <div id="modal-root" />
       </body>
     </html>
