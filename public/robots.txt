@@ -1,0 +1,71 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://mayank-editor.vercel.app/sitemap.xml
+
+# Social Media
+User-agent: Facebookbot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: InstagramBot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Pinterestbot
+Allow: /
+
+# Block crawlers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Block admin areas
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /payment/
+
+# Block sensitive files
+User-agent: *
+Disallow: /.env*
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /prisma/
+
+# Block dynamic pages with query parameters
+User-agent: *
+Disallow: /*?*
+Disallow: /api/webhooks/*
+Disallow: /api/calendly/*
+
+# Allow specific dynamic patterns
+Allow: /courses/*
+Allow: /blog/*
+Allow: /projects/*
+Allow: /auth/signin
+Allow: /auth/signup
+Allow: /api/stripe/verify-payment
+
+# Block internal routes
+User-agent: *
+Disallow: /_next/
+Disallow: /404
+Disallow: /500
+
+Crawl-delay: 1
